@@ -1,0 +1,401 @@
+<!DOCTYPE html><html lang="fr"><head><meta name="x-poe-datastore-behavior" content="local_only"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QCM Anatomie &amp; Physiologie — BPJEPS AF</title>
+<style>
+  :root{--bg:#f7f9fb;--card:#ffffff;--accent:#0b6cf6;--muted:#6b7280;--good:#16a34a;--bad:#dc2626}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:#0f172a}
+  .wrap{max-width:980px;margin:18px auto;padding:16px}
+  header{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  h1{margin:0;font-size:1.2rem}
+  p.lead{margin:0;color:var(--muted);font-size:0.95rem}
+  .card{background:var(--card);border-radius:10px;padding:14px;margin-top:14px;box-shadow:0 6px 18px rgba(12,20,40,.06)}
+  .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  select,button{padding:8px 10px;border-radius:8px;border:1px solid #e6eef9;background:#fff;font-size:0.95rem}
+  button.primary{background:var(--accent);color:#fff;border:0}
+  .small{font-size:0.88rem;color:var(--muted)}
+  #quizArea{margin-top:12px}
+  .questionBox{display:flex;flex-direction:column;gap:10px}
+  .qText{font-weight:600}
+  .answers{display:grid;grid-template-columns:1fr;gap:8px}
+  @media(min-width:600px){.answers{grid-template-columns:repeat(2,1fr)}}
+  .ansBtn{background:#f1f6ff;border:1px solid #e0edff;padding:10px;border-radius:8px;text-align:left;cursor:pointer}
+  .ansBtn:hover{box-shadow:0 4px 10px rgba(11,108,246,.06)}
+  .ansBtn.disabled{opacity:.6;cursor:default}
+  .footerBtns{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+  .resultHeader{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .scoreBox{font-weight:700}
+  .detailsList{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+  .detailItem{padding:10px;border-radius:8px;border:1px solid #eef3ff;background:#fbfdff}
+  .detailItem .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .tag{padding:4px 8px;border-radius:999px;background:#eef6ff;color:var(--accent);font-weight:600;font-size:0.82rem}
+  .explain{margin-top:6px;color:var(--muted);font-size:0.92rem}
+  .good{color:var(--good);font-weight:700}
+  .bad{color:var(--bad);font-weight:700}
+  .copyBtn{padding:6px 10px;border-radius:8px;border:1px solid #e6eef9;background:#fff}
+  footer{margin-top:18px;color:var(--muted);font-size:0.85rem;text-align:center}
+</style>
+<script src="https://puc.poecdn.net/authenticated_preview_page/syncedState.bd4eeeb8e8e02052ee92.js"></script></head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>QCM Anatomie &amp; Physiologie — BPJEPS AF</h1>
+    <p class="lead">Testez vos connaissances — responsive (PC &amp; smartphone). Résultats détaillés avec explications.</p>
+  </header>
+
+  <div class="card">
+    <div class="controls">
+      <label class="small">Nombre de questions :</label>
+      <select id="numSelect">
+        <option value="5">5 questions</option>
+        <option value="10" selected="">10 questions</option>
+        <option value="15">15 questions</option>
+      </select>
+
+      <label class="small">Catégorie (toutes = mix) :</label>
+      <select id="catSelect">
+        <option value="all" selected="">Toutes</option>
+        <option value="anatomie">Anatomie</option>
+        <option value="cellule">Cellule</option>
+        <option value="physiologie">Physiologie</option>
+        <option value="chimie">Physico-chimie</option>
+        <option value="homeostasie">Homéostasie</option>
+      </select>
+
+      <button class="primary" id="startBtn">Démarrer le QCM</button>
+      <button id="restartBtn">Réinitialiser</button>
+    </div>
+
+    <div id="quizArea" style="display:none" class="card">
+      <div id="progress" class="small">Question <span id="curIndex">0</span> / <span id="totalIndex">0</span></div>
+      <div class="questionBox">
+        <div class="qText" id="qText">Question texte</div>
+        <div class="answers" id="answers"></div>
+      </div>
+
+      <div class="footerBtns">
+        <button id="nextBtn" class="small" disabled="">Suivant</button>
+        <button id="quitBtn" class="small">Terminer</button>
+      </div>
+    </div>
+
+    <div id="resultArea" style="display:none" class="card">
+      <div class="resultHeader">
+        <div>
+          <div class="scoreBox" id="scoreSummary">Votre score : 0 / 0 (0%)</div>
+          <div class="small" id="timeInfo">Temps : 0s</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="copyBtn" id="copyResult">Copier le résumé</button>
+          <button class="primary" id="retryBtn">Recommencer</button>
+        </div>
+      </div>
+
+      <div class="detailsList" id="detailsList"></div>
+    </div>
+  </div>
+
+  <footer>Fichier source : Biologie générale BP 2025-2026 — Questions et explications basées sur ce document.</footer>
+</div>
+
+<script>
+/*
+  QCM autonome — questions: array of objects
+  Chaque question: {id, category, q, choices:[], correctIndex, explanation}
+*/
+
+/* -- QUESTIONS : 100 items -- */
+/* Les 40 questions fournies + 60 complémentaires pour arriver à 100.
+   Les libellés reflètent le document fourni. */
+const QUESTIONS = [
+  /* 1-40 (déjà fournis dans le contexte) */
+  {id:1, category:'anatomie', q:"Quelle spécialité de l’anatomie étudie les structures visibles à l’œil nu ?", choices:["Anatomie microscopique","Anatomie macroscopique","Histologie"], correct:1, explanation:"L’anatomie macroscopique (ou générale) traite des organes et structures visibles sans microscope."},
+  {id:2, category:'anatomie', q:"L’embryologie est une branche de :", choices:["L’anatomie du développement","L’anatomie radiologique","La biologie moléculaire"], correct:0, explanation:"L’embryologie étudie le développement prénatal, partie de l’anatomie du développement."},
+  {id:3, category:'cellule', q:"Quel organite est le principal siège de la synthèse des protéines ?", choices:["Lysosome","Ribosome","Mitochondrie"], correct:1, explanation:"Les ribosomes lisent l'ARNm et assemblent les acides aminés en protéines."},
+  {id:4, category:'cellule', q:"Lequel des suivants est une fonction du réticulum endoplasmique rugueux (RER) ?", choices:["Synthèse des lipides stéroïdes","Synthèse des protéines destinées à la sécrétion","Dégradation des déchets cellulaires"], correct:1, explanation:"Le RER possède des ribosomes et fabrique protéines destinées à être sécrétées ou intégrées aux membranes."},
+  {id:5, category:'cellule', q:"Quel rôle joue l’appareil de Golgi ?", choices:["Production d’ATP","Emballage et maturation des protéines","Stockage d’ADN"], correct:1, explanation:"Le Golgi modifie, trie et conditionne les protéines pour sécrétion ou destination intracellulaire."},
+  {id:6, category:'cellule', q:"Les lysosomes contiennent principalement :", choices:["Enzymes de dégradation","ADN mitochondrial","Neurotransmetteurs"], correct:0, explanation:"Ils digèrent organites usés et particules ingérées grâce à leurs enzymes."},
+  {id:7, category:'cellule', q:"Les centrioles interviennent principalement dans :", choices:["Synthèse protéique","Division cellulaire (mitose)","Production d’énergie"], correct:1, explanation:"Les centrioles organisent le fuseau mitotique et aident la formation des cils/flagelles."},
+  {id:8, category:'cellule', q:"Les cils et flagelles servent à :", choices:["Produire de l’ATP","Mouvement ou déplacement de substances","Stocker le calcium"], correct:1, explanation:"Cils déplacent mucus; flagelles comme celui du spermatozoïde assurent la mobilité."},
+  {id:9, category:'cellule', q:"Quelle propriété caractérise une cellule eucaryote ?", choices:["Absence de noyau","Noyau entouré d’une membrane nucléaire","ADN libre dans le cytoplasme"], correct:1, explanation:"Les eucaryotes ont un noyau délimité par une enveloppe nucléaire; les procaryotes non."},
+  {id:10, category:'cellule', q:"Qu’est-ce que la différenciation cellulaire ?", choices:["Mort cellulaire programmée","Spécialisation des cellules via l’expression génétique","Division cellulaire incontrôlée"], correct:1, explanation:"La différenciation résulte d'une activation/inactivation sélective de gènes, conduisant à des fonctions spécialisées."},
+  {id:11, category:'anatomie', q:"En position anatomique de référence, les paumes sont tournées :", choices:["Vers l’arrière","Vers l’avant","Vers les cuisses"], correct:1, explanation:"Position standard : sujet debout, paumes en supination (vers l’avant)."},
+  {id:12, category:'anatomie', q:"Que signifie « proximal » pour un membre ?", choices:["Plus près de l’attache au tronc","Plus loin de l’attache au tronc","Vers la surface du corps"], correct:0, explanation:"Proximal = proche de l'origine du membre (ex : épaule plus proximale que la main)."},
+  {id:13, category:'anatomie', q:"Lequel est opposé de « superficiel » ?", choices:["Profond","Antérieur","Latéral"], correct:0, explanation:"Superficiel = proche de la surface; opposé = profond."},
+  {id:14, category:'anatomie', q:"Quel plan divise le corps en parties antérieure et postérieure ?", choices:["Plan sagittal","Plan frontal (coronal)","Plan transverse"], correct:1, explanation:"Le plan frontal sépare l'avant et l'arrière du corps."},
+  {id:15, category:'anatomie', q:"Quel plan divise le corps en parties droite et gauche ?", choices:["Plan transverse","Plan frontal","Plan sagittal"], correct:2, explanation:"Le plan sagittal (médian s'il passe par la ligne médiane) divise droite/gauche."},
+  {id:16, category:'anatomie', q:"Où se trouvent la cavité crânienne et la cavité vertébrale ?", choices:["Dans la cavité ventrale","Dans la cavité dorsale","Dans la cavité abdominale"], correct:1, explanation:"La cavité dorsale (postérieure) contient encéphale et moelle épinière."},
+  {id:17, category:'anatomie', q:"Quelle cavité contient le cœur ?", choices:["Cavité pleurale","Cavité péricardique","Cavité abdominale"], correct:1, explanation:"Le cœur est logé dans la cavité péricardique du médiastin thoracique."},
+  {id:18, category:'chimie', q:"L’eau représente approximativement quel pourcentage de la masse corporelle ?", choices:["5–10 %","60–80 %","90–95 %"], correct:1, explanation:"L'eau est la substance la plus abondante : environ 60–80 % selon âge et composition corporelle."},
+  {id:19, category:'physiologie', q:"Quel gaz est essentiel pour le métabolisme aérobie ?", choices:["Dioxyde de carbone (CO2)","Oxygène (O2)","Azote (N2)"], correct:1, explanation:"L'oxygène est utilisé par les mitochondries pour produire de l'ATP (respiration cellulaire aérobie)."},
+  {id:20, category:'physiologie', q:"Le CO2 est principalement éliminé par :", choices:["Les reins","Les poumons","Le foie"], correct:1, explanation:"Le CO2 produit par les cellules est transporté vers les poumons et expiré."},
+  {id:21, category:'chimie', q:"Quel ion est majeur dans le liquide intracellulaire et essentiel pour la fonction nerveuse ?", choices:["Sodium (Na+)","Potassium (K+)","Chlorure (Cl-)"], correct:1, explanation:"Le potassium est élevé intracellulairement et essentiel pour le potentiel membranaire et la conduction nerveuse."},
+  {id:22, category:'chimie', q:"Lequel est un système tampon physiologique important pour maintenir le pH sanguin ?", choices:["Le système urogénital","Le système bicarbonate (HCO3-/CO2)","Le système lymphatique"], correct:1, explanation:"Le couple bicarbonate/CO2 permet des ajustements rapides du pH sanguin."},
+  {id:23, category:'chimie', q:"Une acidose correspond à :", choices:["Augmentation du pH","Diminution du pH","pH neutre"], correct:1, explanation:"Acidose = pH sanguin trop bas (plus acide)."},
+  {id:24, category:'biologie', q:"Quelle est la plus petite unité fonctionnelle et structurelle de la vie ?", choices:["Tissu","Organe","Cellule"], correct:2, explanation:"La cellule est l’unité de base de tous les organismes vivants."},
+  {id:25, category:'anatomie', q:"L’anatomie radiologique utilise principalement :", choices:["Le microscope optique","L’imagerie (rayons X, scanner)","Les tests biochimiques"], correct:1, explanation:"L'anatomie radiologique visualise structures internes via rayons X, scanner, IRM."},
+  {id:26, category:'physiologie', q:"La physiologie s’intéresse surtout à :", choices:["La description des structures visibles","Le fonctionnement des organes et processus","La classification des espèces"], correct:1, explanation:"La physiologie décrit comment les structures fonctionnent et interagissent."},
+  {id:27, category:'physiologie', q:"La pathophysiologie étudie :", choices:["Les pathologies étudiées en imagerie","Les modifications fonctionnelles liées aux maladies","Les os et articulations uniquement"], correct:1, explanation:"La pathophysiologie décrit comment la maladie altère les fonctions normales."},
+  {id:28, category:'cellule', q:"Le rôle principal du cytosquelette est :", choices:["Produire ATP","Maintenir la forme cellulaire et permettre le transport intracellulaire","Entreposer les nutriments"], correct:1, explanation:"Microtubules et microfilaments structurent la cellule et facilitent le transport vésiculaire."},
+  {id:29, category:'chimie', q:"Dans la membrane plasmique, la barrière principale est constituée de :", choices:["Polysaccharides","Bicouche lipidique","Protéines seulement"], correct:1, explanation:"La bicouche de phospholipides forme une barrière hydrophobe contrôlant les échanges."},
+  {id:30, category:'chimie', q:"Une liaison chimique dans laquelle les électrons sont partagés s’appelle :", choices:["Liaison ionique","Liaison covalente","Liaison hydrogène"], correct:1, explanation:"Covalente = partage d'électrons; ionique = transfert; hydrogène = interaction faible entre atomes partiellement chargés."},
+  {id:31, category:'chimie', q:"Les liaisons hydrogène entre bases azotées sont importantes pour :", choices:["La synthèse d’ATP","La structure en double hélice de l’ADN","La fabrication de membranes"], correct:1, explanation:"Les liaisons hydrogène maintiennent les deux brins complémentaires de l'ADN."},
+  {id:32, category:'chimie', q:"Quel élément est le principal constituant des molécules organiques ?", choices:["Calcium (Ca)","Carbone (C)","Sodium (Na)"], correct:1, explanation:"Le carbone forme la colonne vertébrale des molécules organiques."},
+  {id:33, category:'physiologie', q:"Lequel parmi ces systèmes participe surtout au transport des nutriments et des gaz ?", choices:["Système circulatoire","Système tégumentaire","Système nerveux"], correct:0, explanation:"Le sang transporte O2, nutriments, hormones et déchets vers/depuis les tissus."},
+  {id:34, category:'physiologie', q:"Le système qui prélève O2 et rejette CO2 est :", choices:["Système digestif","Système respiratoire","Système urinaire"], correct:1, explanation:"Le système respiratoire (poumons, voies aériennes) assure les échanges gazeux."},
+  {id:35, category:'physiologie', q:"Quel système assure la défense de l’organisme contre les agents pathogènes ?", choices:["Système immunitaire","Système musculo-squelettique","Système endocrinien"], correct:0, explanation:"Le système immunitaire (inné et adaptatif) protège contre infections et agents étrangers."},
+  {id:36, category:'anatomie', q:"Lequel des organes suivants stocke principalement le calcium ?", choices:["Foie","Os","Peau"], correct:1, explanation:"Les os servent de réservoir pour le calcium et le phosphore."},
+  {id:37, category:'homeostasie', q:"Lequel des énoncés décrit le mieux l’homéostasie ?", choices:["Un état statique qui ne change jamais","Un équilibre dynamique avec des variations dans des limites","Un déséquilibre permanent"], correct:1, explanation:"L'homéostasie maintient les paramètres internes dans une plage compatible avec la vie, malgré des variations."},
+  {id:38, category:'physiologie', q:"Quels organes participent principalement à la régulation du pH à long terme ?", choices:["Poumons","Reins","Peau"], correct:1, explanation:"Les reins ajustent l'excrétion des ions H+ et la réabsorption de bicarbonate pour réguler le pH à long terme."},
+  {id:39, category:'physiologie', q:"Quelle spécialité de la physiologie étudie les hormones ?", choices:["Neurophysiologie","Endocrinologie","Immunologie"], correct:1, explanation:"L'endocrinologie porte sur les glandes endocrines, les hormones et leurs effets sur l'organisme."},
+  {id:40, category:'chimie', q:"Lequel des éléments suivants n’est pas un électrolyte majeur ?", choices:["Sodium (Na+)","Potassium (K+)","Oxygène (O2)"], correct:2, explanation:"O2 est un gaz respiratoire; électrolytes sont des ions dissous (Na+, K+, Cl-, Ca2+, etc.)."},
+
+  /* 41-100 : 60 questions complémentaires (formulées pour couvrir le reste du document) */
+  {id:41, category:'anatomie', q:"L'anatomie de surface consiste à :", choices:["Étudier les structures internes par imagerie","Observer les structures internes en relation avec la surface de la peau","Analyser les tissus au microscope"], correct:1, explanation:"L'anatomie de surface relie les repères cutanés aux structures profondes, utile en examen clinique."},
+  {id:42, category:'anatomie', q:"L'anatomie des systèmes étudie :", choices:["Toutes les structures d'une région spécifique","L'anatomie d'un système (ex : cardiovasculaire)","La biologie moléculaire"], correct:1, explanation:"Elle se concentre sur l'anatomie d'un système particulier (sanguin, nerveux, digestif...)."},
+  {id:43, category:'anatomie', q:"L'anatomie pathologique s'intéresse à :", choices:["Les structures normales uniquement","Les lésions causées par les maladies","La physiologie respiratoire"], correct:1, explanation:"Elle étudie les changements structurels induits par la maladie."},
+  {id:44, category:'anatomie', q:"Quelle technique appartient à l'anatomie radiologique ?", choices:["Dissection","Auscultation","Scanner (CT)"], correct:2, explanation:"La tomodensitométrie (CT) est une technique d'imagerie utilisée en anatomie radiologique."},
+  {id:45, category:'biologie', q:"La biologie moléculaire traite :", choices:["De la structure des molécules biologiques","Des mouvements articulaires","De l'anatomie de surface"], correct:0, explanation:"Elle étudie l'ADN, ARN, protéines et leurs interactions au niveau moléculaire."},
+  {id:46, category:'cellule', q:"Où se forme principalement l'ATP dans la cellule ?", choices:["Appareil de Golgi","Mitochondries","Réticulum endoplasmique"], correct:1, explanation:"Les réactions d'oxydation dans les mitochondries produisent l'ATP (respiration cellulaire)."},
+  {id:47, category:'cellule', q:"Le nucléole est :", choices:["Le siège de la respiration cellulaire","Le centre d'assemblage des composants ribosomiques","Une vésicule de sécrétion"], correct:1, explanation:"Le nucléole assemble l'ARN ribosomique et les protéines ribosomiques pour former les sous-unités ribosomiques."},
+  {id:48, category:'cellule', q:"Les vésicules synaptiques dans les neurones contiennent :", choices:["Hormones","Neurotransmetteurs","Enzymes digestives"], correct:1, explanation:"Elles stockent et libèrent neurotransmetteurs au niveau des synapses."},
+  {id:49, category:'cellule', q:"Le réticulum endoplasmique lisse (REL) est impliqué dans :", choices:["Synthèse des protéines","Synthèse des stéroïdes et détoxification","Dégradation lysosomale"], correct:1, explanation:"Le REL participe à la synthèse des lipides/stéroïdes, stockage du calcium et détoxification."},
+  {id:50, category:'cellule', q:"Quel composant cellulaire aide au transport intracellulaire et au mouvement des organites ?", choices:["Cytosquelette","Membrane plasmique","Noyau"], correct:0, explanation:"Le cytosquelette (microtubules, microfilaments) assure la structure et le transport intracellulaire."},
+  {id:51, category:'physiologie', q:"La physiologie rénale étudie :", choices:["Fonctionnement des poumons","Fonctionnement des reins","Fonctionnement du cœur"], correct:1, explanation:"La physiologie rénale porte sur filtration, réabsorption, sécrétion et régulation des fluides par les reins."},
+  {id:52, category:'physiologie', q:"La neurophysiologie concerne :", choices:["Fonctionnement du système nerveux","Structure des os","Mouvement des muscles uniquement"], correct:0, explanation:"Elle étudie la transmission nerveuse, fonctions neuronales et circuits."},
+  {id:53, category:'physiologie', q:"La physiologie physique s'intéresse à :", choices:["Les modifications fonctionnelles liées à l'activité musculaire","La structure des tissus","La croissance embryonnaire"], correct:0, explanation:"Elle étudie les réponses physiologiques à l'exercice et au travail musculaire."},
+  {id:54, category:'homeostasie', q:"Quels systèmes participent principalement au maintien de l'homéostasie ?", choices:["Système nerveux et endocrinien","Système digestif et tégumentaire","Système squelettique uniquement"], correct:0, explanation:"Système nerveux (réponses rapides) et endocrinien (réponses lentes) régulent l'homéostasie."},
+  {id:55, category:'homeostasie', q:"L'homéostasie régule notamment :", choices:["La concentration en O2/CO2, le pH et la température","La couleur des yeux","La longueur des os"], correct:0, explanation:"Elle maintient des paramètres physiologiques (gaz, pH, électrolytes, volume sanguin, température...)."},
+  {id:56, category:'anatomie', q:"La région inguinale correspond à :", choices:["La partie latérale du thorax","La jonction entre cuisse et tronc (aine)","La région postérieure du genou"], correct:1, explanation:"L'aine (région inguinale) est la zone frontale où la cuisse se fixe au tronc."},
+  {id:57, category:'anatomie', q:"Le terme 'caudal' signifie :", choices:["Vers la tête","Éloigné de la tête (vers les pieds)","Vers l'extérieur"], correct:1, explanation:"Caudal = vers la queue / les pieds; opposé de céphalique/crânial."},
+  {id:58, category:'anatomie', q:"Le terme 'latéral' indique :", choices:["Près de la ligne médiane","Éloigné de la ligne médiane","Vers la surface du corps"], correct:1, explanation:"Latéral signifie éloigné de la ligne médiane (ex : épaule est latérale au sternum)."},
+  {id:59, category:'chimie', q:"Un atome est constitué de :", choices:["Protons, neutrons et électrons","Cellules, tissus et organes","Molécules et ions uniquement"], correct:0, explanation:"Protons et neutrons forment le noyau; électrons orbitent autour."},
+  {id:60, category:'chimie', q:"Le nombre de protons définit :", choices:["Le nombre atomique d'un élément","La masse molaire","La charge négative"], correct:0, explanation:"Le nombre de protons (Z) caractérise un élément et son nombre atomique."},
+  {id:61, category:'chimie', q:"Une molécule est :", choices:["Un atome unique","Une combinaison de deux atomes ou plus liés chimiquement","Un organe"], correct:1, explanation:"Les molécules résultent de l'association d'atomes via liaisons chimiques."},
+  {id:62, category:'chimie', q:"Une liaison ionique implique :", choices:["Partage d'électrons","Transfert d'électrons créant des ions","Interaction hydrophobe"], correct:1, explanation:"Liaison ionique = transfert d'électrons entre atomes formant cations/anions électrostatiquement liés."},
+  {id:63, category:'chimie', q:"Quel rôle joue l'oxygène (O2) dans les cellules ?", choices:["Source principale d'ATP via métabolisme aérobie","Tampon pH majeur","Électrolyte intracellulaire"], correct:0, explanation:"O2 sert d'accepteur final d'électrons dans la chaîne respiratoire mitochondriale pour produire de l'ATP."},
+  {id:64, category:'chimie', q:"Le dioxyde de carbone (CO2) :", choices:["Est utilisé comme source d'énergie","Est un déchet de la respiration cellulaire éliminé par les poumons","Est un électrolyte"], correct:1, explanation:"CO2 est produit par le métabolisme et doit être éliminé pour maintenir l'équilibre acido-basique."},
+  {id:65, category:'chimie', q:"Le calcium (Ca) a un rôle important dans :", choices:["Transduction du signal, contraction musculaire et structure osseuse","Transport de l'oxygène","Synthèse d'ADN"], correct:0, explanation:"Le calcium intervient dans contraction musculaire, signalisation cellulaire et est stocké dans les os."},
+  {id:66, category:'chimie', q:"Le pH mesure :", choices:["La pression partielle de l'oxygène","L'acidité ou alcalinité via [H+]","La concentration en sucre"], correct:1, explanation:"Le pH est l'échelle logarithmique de la concentration en ions hydrogène [H+]."},
+  {id:67, category:'physiologie', q:"Les systèmes qui contribuent à l'homéostasie en transportant des matériaux sont :", choices:["Digestif","Circulatoire","Tégumentaire"], correct:1, explanation:"Le système circulatoire transporte nutriments, gaz, hormones et déchets vers et depuis les tissus."},
+  {id:68, category:'physiologie', q:"Quel organe est principalement impliqué dans l'élimination des déchets azotés ?", choices:["Rein","Rate","Poumon"], correct:0, explanation:"Les reins filtrent le sang et excrètent l'urée et autres déchets azotés dans l'urine."},
+  {id:69, category:'physiologie', q:"La transmission de l'influx nerveux se fait principalement via :", choices:["Sang","Neurones","Lymphe"], correct:1, explanation:"Les neurones transmettent des signaux électriques et chimiques pour la communication rapide."},
+  {id:70, category:'physiologie', q:"Quel organe produit la bile ?", choices:["Pancréas","Foie","Vésicule séminale"], correct:1, explanation:"Le foie synthétise la bile; la vésicule biliaire la stocke et la concentre."},
+  {id:71, category:'anatomie', q:"La cavité pleurale contient :", choices:["Le cœur","Les poumons","L'intestin"], correct:1, explanation:"Chaque pulmón est entouré d'une cavité pleurale bilatérale."},
+  {id:72, category:'physiologie', q:"L'endocrinologie étudie les :", choices:["Neurones","Hormones","Muscles"], correct:1, explanation:"Elle traite des glandes endocrines, des hormones et de leur rôle régulateur."},
+  {id:73, category:'cellule', q:"Quelle structure contrôle les échanges entre le noyau et le cytoplasme ?", choices:["Membrane plasmique","Pores nucléaires de l'enveloppe nucléaire","Golgi"], correct:1, explanation:"Les pores nucléaires régulent le trafic d'ARN et protéines entre noyau et cytoplasme."},
+  {id:74, category:'cellule', q:"Les mitochondries peuvent produire aussi :", choices:["Protéines", "Chaleur", "Acides nucléiques"], correct:1, explanation:"Les mitochondries peuvent contribuer à la thermogenèse en produisant de la chaleur (ex: tissu adipeux brun)."},
+  {id:75, category:'anatomie', q:"La cavité abdominopelvienne contient notamment :", choices:["Le cerveau","L'estomac, intestins, foie, organes reproducteurs","La moelle épinière"], correct:1, explanation:"La cavité abdominopelvienne regroupe les organes digestifs et pelviens (reproducteurs, vessie...)."},
+  {id:76, category:'chimie', q:"Les électrolytes influencent :", choices:["L'osmolarité, l'équilibre acido-basique et la conduction nerveuse","La couleur des os","La fréquence cardiaque uniquement"], correct:0, explanation:"Na+, K+, Cl-, Ca2+ régulent osmolarité, pH, contraction musculaire et influx nerveux."},
+  {id:77, category:'physiologie', q:"Quel système produit de la chaleur et permet le mouvement ?", choices:["Système tégumentaire","Système musculaire","Système digestif"], correct:1, explanation:"Les muscles produisent chaleur et réalisent les mouvements volontaires/involontaires."},
+  {id:78, category:'anatomie', q:"La région 'céphalique' correspond à :", choices:["Le tronc","La tête","La jambe"], correct:1, explanation:"Céphalie = tête."},
+  {id:79, category:'cellule', q:"Les ribosomes sont composés de :", choices:["ARN et protéines","Lipides","Nucléotides uniquement"], correct:0, explanation:"Les ribosomes sont des complexes d'ARN ribosomique et protéines ribosomiques."},
+  {id:80, category:'anatomie', q:"La surface antérieure du corps se dit :", choices:["Dorsal","Ventral","Caudal"], correct:1, explanation:"Antérieur = ventral = face avant du corps; dorsal = arrière."},
+  {id:81, category:'homeostasie', q:"Le volume et la pression sanguine sont régulés par :", choices:["Système circulatoire et reins","Système digestif","Système musculo-squelettique"], correct:0, explanation:"Reins et système circulatoire (avec hormones) contrôlent volume et pression sanguine."},
+  {id:82, category:'physiologie', q:"La pathophysiologie s'intéresse à :", choices:["Les fonctions modifiées par la maladie","La structure normale seulement","Les lois physiques"], correct:0, explanation:"Elle décrit comment une maladie altère les fonctions physiologiques normales."},
+  {id:83, category:'chimie', q:"Les enzymes accélèrent les réactions chimiques en :", choices:["Augmentant l'énergie d'activation","Diminuant l'énergie d'activation","Changeant l'équilibre chimique"], correct:1, explanation:"Les enzymes abaissent l'énergie d'activation, rendant les réactions plus rapides sans changer l'équilibre."},
+  {id:84, category:'cellule', q:"Les vésicules de sécrétion servent à :", choices:["Stocker et libérer des protéines de sécrétion","Faire la photosynthèse","Produire ATP"], correct:0, explanation:"Elles contiennent des protéines à sécréter (ex : hormones, enzymes) et les libèrent par exocytose."},
+  {id:85, category:'anatomie', q:"Le poignet se nomme en terme anatomique :", choices:["Carpien","Tibial","Crânial"], correct:0, explanation:"Le poignet est la région carpienne; tibial concerne la jambe; crânial la tête."},
+  {id:86, category:'anatomie', q:"Lequel des termes décrit la direction 'vers la tête' ?", choices:["Céphalique","Caudal","Latéral"], correct:0, explanation:"Céphalique ou crânial signifie vers la tête."},
+  {id:87, category:'physiologie', q:"La régulation rapide de l'homéostasie est principalement assurée par :", choices:["Système endocrinien","Système nerveux","Les os"], correct:1, explanation:"Le système nerveux fournit des réponses rapides via influx nerveux."},
+  {id:88, category:'physiologie', q:"Les réponses plus lentes et soutenues de régulation homéostasique sont assurées par :", choices:["Système nerveux","Système endocrinien","Peau"], correct:1, explanation:"Les hormones produites par le système endocrinien provoquent des effets plus lents mais durables."},
+  {id:89, category:'chimie', q:"Les lipides membranaires principaux sont :", choices:["Phospholipides","Acides aminés","Glucides"], correct:0, explanation:"Les phospholipides forment la bicouche lipidique de la membrane plasmique."},
+  {id:90, category:'cellule', q:"Les organites responsables du tri et de l'export des protéines sont :", choices:["Mitochondries","Appareil de Golgi","Lysosomes"], correct:1, explanation:"Le Golgi trie, modifie et expédie les protéines vers leur destination."},
+  {id:91, category:'physiologie', q:"Quel organe joue un rôle majeur en détoxification ?", choices:["Rein","Foie","Cœur"], correct:1, explanation:"Le foie métabolise et détoxifie de nombreuses substances chimiques et médicaments."},
+  {id:92, category:'anatomie', q:"Qu'est-ce que l'anatomie microscopique inclut ?", choices:["Histologie et cytologie","Radiologie uniquement","Anatomie de surface"], correct:0, explanation:"L'anatomie microscopique comprend l'étude des tissus (histologie) et des cellules (cytologie)."},
+  {id:93, category:'chimie', q:"Le concept d'osmolarité est lié à :", choices:["Concentration en solutés affectant le mouvement d'eau","Le pH uniquement","La pression artérielle"], correct:0, explanation:"L'osmolarité détermine le flux d'eau entre compartiments en fonction des solutés."},
+  {id:94, category:'physiologie', q:"La formation du mouvement volontaire dépend principalement de :", choices:["Le cortex moteur et muscles","Le foie","La peau"], correct:0, explanation:"Le cortex moteur contrôle l'activation des motoneurones qui commandent les muscles."},
+  {id:95, category:'homeostasie', q:"La température corporelle est maintenue via :", choices:["Production/ perte de chaleur (métabolisme, sudation, vasodilatation)","Modification du pH","Stockage de calcium"], correct:0, explanation:"Thermorégulation implique production de chaleur (muscles) et mécanismes de perte (peau, circulation)."},
+  {id:96, category:'anatomie', q:"Les incisives sont adaptées pour :", choices:["Broyer les aliments","Couper les aliments","Stocker des nutriments"], correct:1, explanation:"Les bords tranchants des incisives sont conçus pour couper; les molaires broient."},
+  {id:97, category:'cellule', q:"Les globules rouges humains (érythrocytes) n'ont pas :", choices:["Membrane plasmique","Noyau","Hémoglobine"], correct:1, explanation:"Les érythrocytes matures n'ont pas de noyau pour maximiser l'espace pour l'hémoglobine."},
+  {id:98, category:'physiologie', q:"Le flux sanguin est assuré principalement par :", choices:["Le cœur et vaisseaux sanguins","Le foie","Les poumons"], correct:0, explanation:"Le cœur pompe le sang; les artères, veines, capillaires assurent la distribution."},
+  {id:99, category:'chimie', q:"Une molécule polaire dissout bien dans :", choices:["Solvant non polaire","Eau (solvant polaire)","Gaz inert"], correct:1, explanation:"Les molécules polaires interagissent favorablement avec l'eau grâce aux interactions dipôle/ion-dipôle."},
+  {id:100, category:'homeostasie', q:"Le maintien des concentrations d'eau et d'électrolytes implique principalement :", choices:["Système urinaire et hormones (aldostérone, ADH)","Système respiratoire uniquement","Système tégumentaire uniquement"], correct:0, explanation:"Reins et hormones régulent l'équilibre hydrique et ionique (ADH contrôle rétention d'eau; aldostérone régule Na+/K+)."}
+];
+
+let pool = [];          // questions sélectionnées pour la session
+let curIndex = 0;       // index dans pool
+let score = 0;
+let startTime = 0;
+let selectedAnswers = []; // store {qid, chosenIndex}
+
+/* UI refs */
+const startBtn = document.getElementById('startBtn');
+const restartBtn = document.getElementById('restartBtn');
+const retryBtn = document.getElementById('retryBtn');
+const copyBtn = document.getElementById('copyResult');
+const quizArea = document.getElementById('quizArea');
+const resultArea = document.getElementById('resultArea');
+const qText = document.getElementById('qText');
+const answersEl = document.getElementById('answers');
+const numSelect = document.getElementById('numSelect');
+const catSelect = document.getElementById('catSelect');
+const curIndexEl = document.getElementById('curIndex');
+const totalIndexEl = document.getElementById('totalIndex');
+const nextBtn = document.getElementById('nextBtn');
+const quitBtn = document.getElementById('quitBtn');
+const scoreSummary = document.getElementById('scoreSummary');
+const timeInfo = document.getElementById('timeInfo');
+const detailsList = document.getElementById('detailsList');
+const restartAll = document.getElementById('restartBtn');
+
+/* helpers */
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a }
+
+function startQuiz(){
+  // prepare pool
+  const n = parseInt(numSelect.value,10);
+  const cat = catSelect.value;
+  const filtered = (cat==='all') ? QUESTIONS.slice() : QUESTIONS.filter(q=>q.category===cat);
+  if(filtered.length < n){
+    alert("Pas assez de questions dans cette catégorie. Choisissez 'Toutes' ou réduisez le nombre.");
+    return;
+  }
+  pool = shuffle(filtered).slice(0,n);
+  curIndex = 0; score = 0; selectedAnswers = [];
+  startTime = Date.now();
+  quizArea.style.display = 'block';
+  resultArea.style.display = 'none';
+  showQuestion();
+  document.getElementById('totalIndex').innerText = pool.length;
+}
+
+function showQuestion(){
+  const item = pool[curIndex];
+  curIndexEl.innerText = curIndex + 1;
+  totalIndexEl.innerText = pool.length;
+  qText.innerText = (curIndex+1) + ". " + item.q;
+  answersEl.innerHTML = '';
+  nextBtn.disabled = true;
+
+  item.choices.forEach((ch, idx)=>{
+    const btn = document.createElement('button');
+    btn.className = 'ansBtn';
+    btn.innerText = String.fromCharCode(65+idx)+". "+ch;
+    btn.onclick = ()=> selectAnswer(idx, btn);
+    answersEl.appendChild(btn);
+  });
+}
+
+function selectAnswer(idx, btn){
+  // disable all buttons visually
+  Array.from(answersEl.children).forEach(b=>{ b.classList.add('disabled'); b.disabled = true; });
+  btn.classList.remove('disabled');
+  btn.style.boxShadow = '0 6px 18px rgba(11,108,246,.12)';
+  nextBtn.disabled = false;
+
+  // store selection but don't compute score yet until next/finish
+  selectedAnswers[curIndex] = idx;
+}
+
+nextBtn.addEventListener('click', ()=>{
+  processCurrentAndAdvance();
+});
+
+quitBtn.addEventListener('click', ()=>{
+  // confirm if mid-quiz
+  if(confirm("Voulez-vous terminer le QCM maintenant ? Vous verrez les résultats.")){
+    finalize();
+  }
+});
+
+retryBtn.addEventListener('click', ()=> {
+  // restart same settings
+  startQuiz();
+});
+
+startBtn.addEventListener('click', startQuiz);
+restartAll.addEventListener('click', ()=> {
+  // reset settings to default
+  numSelect.value = '10';
+  catSelect.value = 'all';
+  quizArea.style.display = 'none';
+  resultArea.style.display = 'none';
+});
+
+copyBtn.addEventListener('click', ()=>{
+  const text = buildResultText();
+  navigator.clipboard?.writeText(text).then(()=> alert("Résultat copié dans le presse-papier."), ()=> alert("Impossible de copier automatiquement."));
+});
+
+/* process */
+function processCurrentAndAdvance(){
+  // evaluate current question
+  const item = pool[curIndex];
+  const chosen = (selectedAnswers[curIndex]!==undefined) ? selectedAnswers[curIndex] : null;
+  if(chosen !== null && chosen === item.correct) score++;
+  // mark correct/incorrect visually before moving (optional)
+  curIndex++;
+  if(curIndex < pool.length){
+    showQuestion();
+  } else {
+    finalize();
+  }
+}
+
+function finalize(){
+  // compute final score (in case some not answered)
+  // already tallied when advancing; but ensure unanswered are treated as wrong
+  const total = pool.length;
+  const percent = Math.round((score/total)*100);
+  const elapsed = Math.floor((Date.now()-startTime)/1000);
+  scoreSummary.innerText = `Votre score : ${score} / ${total} (${percent}%)`;
+  timeInfo.innerText = `Temps : ${elapsed}s`;
+  // build details
+  detailsList.innerHTML = '';
+  pool.forEach((item, idx)=>{
+    const chosen = selectedAnswers[idx]!==undefined ? selectedAnswers[idx] : null;
+    const isGood = (chosen === item.correct);
+    const d = document.createElement('div');
+    d.className = 'detailItem';
+    const meta = document.createElement('div'); meta.className = 'meta';
+    const qn = document.createElement('div'); qn.innerHTML = `<strong>${idx+1}. ${item.q}</strong>`;
+    const tag = document.createElement('div'); tag.className = 'tag';
+    tag.innerText = isGood ? 'Bonne réponse' : 'Mauvaise réponse';
+    if(isGood) tag.style.background = '#e6fbef', tag.style.color='#047857';
+    else tag.style.background = '#fff1f2', tag.style.color='#b91c1c';
+    meta.appendChild(tag);
+    meta.appendChild(qn);
+    d.appendChild(meta);
+
+    // choices summary
+    const choiceText = document.createElement('div');
+    const chosenText = chosen !== null ? `${String.fromCharCode(65+chosen)}. ${item.choices[chosen]}` : 'Aucune réponse';
+    const correctText = `${String.fromCharCode(65+item.correct)}. ${item.choices[item.correct]}`;
+    const resLine = document.createElement('div');
+    resLine.innerHTML = `<div style="margin-top:8px"><strong>Votre réponse :</strong> ${chosenText} &nbsp;&nbsp; <strong>Bonne réponse :</strong> ${correctText}</div>`;
+    d.appendChild(resLine);
+
+    // explanation
+    const expl = document.createElement('div');
+    expl.className = 'explain';
+    expl.innerHTML = `<em>Explication :</em> ${item.explanation}`;
+    d.appendChild(expl);
+
+    detailsList.appendChild(d);
+  });
+
+  quizArea.style.display = 'none';
+  resultArea.style.display = 'block';
+}
+
+/* builds a plain-text summary for copying */
+function buildResultText(){
+  const total = pool.length;
+  const percent = Math.round((score/total)*100);
+  let text = `QCM Anatomie & Physiologie — Résultat\nScore: ${score}/${total} (${percent}%)\n\nDétails :\n`;
+  pool.forEach((item, idx)=>{
+    const chosen = selectedAnswers[idx]!==undefined ? selectedAnswers[idx] : null;
+    const chosenText = chosen!==null ? `${String.fromCharCode(65+chosen)}. ${item.choices[chosen]}` : 'Aucune réponse';
+    const correctText = `${String.fromCharCode(65+item.correct)}. ${item.choices[item.correct]}`;
+    text += `${idx+1}. ${item.q}\n  Votre réponse: ${chosenText}\n  Bonne réponse: ${correctText}\n  Explication: ${item.explanation}\n\n`;
+  });
+  return text;
+}
+
+/* Initialize minimal state (no auto start) */
+</script>
+
+
+</body></html>
